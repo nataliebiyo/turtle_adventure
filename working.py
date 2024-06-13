@@ -74,22 +74,26 @@ class Fish(GameObject):
             self.kill()
 
 def create_fish(fish_group):
-    spawn_chance = random.randint(0, 1)
-    if spawn_chance == 1:
-        fish_sprite_choice = random.choice(FISH_SPRITES)
+    fish_sprite_choice = random.choice(FISH_SPRITES)
+    try:
         fish_sprite = pygame.image.load(fish_sprite_choice).convert_alpha()
         fish_rect = (0, 0, 16, 16)  # Adjust sprite_rect as needed
         fish = Fish([1200, random.randint(0, 684)], fish_sprite, fish_rect, scale=5)  # Random y position
         fish_group.add(fish)
+        print(f"Created fish at position {fish.position} with sprite {fish_sprite_choice}")  # Debugging
+    except pygame.error as e:
+        print(f"Error loading fish sprite: {fish_sprite_choice}, {e}")
 
 # Create the screen
 game_screen = Screen(1200, 700)
 game_screen.setup()
 
 # Load the sprite sheet for the player
-
-player_sprite = pygame.image.load("playerturtle.png").convert_alpha()
-player = Player([600, 630], player_sprite, (0, 0, 16, 16), scale=5)  # Adjust sprite_rect as needed
+try:
+    player_sprite = pygame.image.load("playerturtle.png").convert_alpha()
+    player = Player([600, 630], player_sprite, (0, 0, 16, 16), scale=5)  # Adjust sprite_rect as needed
+except pygame.error as e:
+    print(f"Error loading player sprite: {e}")
 
 # Create a group for fish
 fish_group = pygame.sprite.Group()
@@ -102,11 +106,10 @@ while RUN:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 player.move_up()
+                create_fish(fish_group)
 
     game_screen.screen.fill(BG_COLOUR)  # Clear the screen each frame
     player.draw_sprite(game_screen.screen)
-
-    create_fish(fish_group)
     fish_group.update()
     fish_group.draw(game_screen.screen)
 
