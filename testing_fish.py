@@ -9,16 +9,7 @@ pygame.init()
 RUN = True
 BG_COLOUR = (135, 206, 250)  # RGB value for light blue
 FISH_SPRITES = ["cyan_fish_sprite.png", "orange_fish_sprite.png", "red_fish_sprite.png"]
-
-# Debug: Print current working directory
-print("Current working directory:", os.getcwd())
-
-# Debug: Check if sprite files exist
-for sprite in ["playerturtle.png"] + FISH_SPRITES:
-    if not os.path.exists(sprite):
-        print(f"Sprite file not found: {sprite}")
-    else:
-        print(f"Sprite file found: {sprite}")
+FISH_SPEED = 0.3
 
 class Screen:
     def __init__(self, width, height):
@@ -63,23 +54,26 @@ class Player(GameObject):
         self.position = [600, 630]
         self.rect.topleft = self.position
 
+    def is_at_end_position(self):
+        return self.rect.y <= 100
+
 class Fish(GameObject):
     def __init__(self, position, sprite_sheet, sprite_rect, scale):
         super().__init__(position, sprite_sheet, sprite_rect, scale)
 
     def update(self):
-        self.position[0] -= 5  # Move fish left
+        self.position[0] -= 0.15  # Move fish left
         self.rect.x = self.position[0]
         if self.position[0] < -self.rect.width:  # Remove fish if it moves off screen
             self.kill()
 
 def create_fish(fish_group):
-    spawn_chance = random.randint(0, 1)
+    spawn_chance = random.randint(0, 600)
     if spawn_chance == 1:
         fish_sprite_choice = random.choice(FISH_SPRITES)
         fish_sprite = pygame.image.load(fish_sprite_choice).convert_alpha()
         fish_rect = (0, 0, 16, 16)  # Adjust sprite_rect as needed
-        fish = Fish([1200, random.randint(0, 684)], fish_sprite, fish_rect, scale=5)  # Random y position
+        fish = Fish([1200, random.randint(100, 550)], fish_sprite, fish_rect, scale=4)  # Random y position
         fish_group.add(fish)
 
 # Create the screen
@@ -97,11 +91,15 @@ fish_group = pygame.sprite.Group()
 # Main loop
 while RUN:
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             RUN = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 player.move_up()
+
+    if player.is_at_end_position():
+        player.go_to_start()
 
     game_screen.screen.fill(BG_COLOUR)  # Clear the screen each frame
     player.draw_sprite(game_screen.screen)
