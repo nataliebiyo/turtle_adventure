@@ -4,6 +4,7 @@ import os
 
 # pygame setup
 pygame.init()
+pygame.font.init()
 
 # variables
 RUN = True
@@ -22,9 +23,6 @@ class Screen:
         pygame.display.set_caption("TURTLE ADVENTURE")
         self.screen.fill(BG_COLOUR)
         pygame.display.flip()
-
-class Scoreboard:
-    pass
 
 class GameObject(pygame.sprite.Sprite):
     def __init__(self, position, sprite_sheet, sprite_rect, scale):
@@ -45,14 +43,21 @@ class GameObject(pygame.sprite.Sprite):
 class Player(GameObject):
     def __init__(self, position, sprite_sheet, sprite_rect, scale):
         super().__init__(position, sprite_sheet, sprite_rect, scale)
+   
+    def go_to_start(self):
+        self.position = [575, 630]
+        self.rect.topleft = self.position
 
     def move_up(self):
         self.position[1] -= 20
         self.rect.y = self.position[1]
 
-    def go_to_start(self):
-        self.position = [600, 630]
-        self.rect.topleft = self.position
+    def move_down(self):
+        self.position[1] += 20
+        self.rect.y = self.position[1]
+
+        if self.position[1] > 630:
+            self.go_to_start()
 
     def is_at_end_position(self):
         return self.rect.y <= 100
@@ -76,6 +81,14 @@ def create_fish(fish_group):
         fish = Fish([1200, random.randint(100, 550)], fish_sprite, fish_rect, scale=4)  # Random y position
         fish_group.add(fish)
 
+class Scoreboard:
+    def __init__(self, position, font):
+        self.position = position
+        self.font = font
+    
+    def increase_score():
+        pass  
+
 # Create the screen
 game_screen = Screen(1200, 700)
 game_screen.setup()
@@ -83,23 +96,13 @@ game_screen.setup()
 # Load the sprite sheet for the player
 
 player_sprite = pygame.image.load("playerturtle.png").convert_alpha()
-player = Player([600, 630], player_sprite, (0, 0, 16, 16), scale=5)  # Adjust sprite_rect as needed
+player = Player([575, 630], player_sprite, (0, 0, 16, 16), scale=5)  # Adjust sprite_rect as needed
 
 # Create a group for fish
 fish_group = pygame.sprite.Group()
 
 # Main loop
 while RUN:
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-            RUN = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                player.move_up()
-
-    if player.is_at_end_position():
-        player.go_to_start()
 
     game_screen.screen.fill(BG_COLOUR)  # Clear the screen each frame
     player.draw_sprite(game_screen.screen)
@@ -109,5 +112,21 @@ while RUN:
     fish_group.draw(game_screen.screen)
 
     pygame.display.flip()
+
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+            RUN = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                player.move_up()
+            if event.key == pygame.K_DOWN:
+                player.move_down()
+
+    if player.is_at_end_position():
+        player.go_to_start()
+
+    collision = pygame.sprite.spritecollide(player, fish_group, True)
+    
 
 pygame.quit()
