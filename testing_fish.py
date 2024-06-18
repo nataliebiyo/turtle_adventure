@@ -9,7 +9,7 @@ pygame.font.init()
 # variables
 RUN = True
 FISH_SPRITES = ["cyan_fish_sprite.png", "orange_fish_sprite.png", "red_fish_sprite.png"]
-FISH_SPEED = 0.3
+FISH_SPEED = 0.15
 SCORE_FONT = pygame.font.SysFont("Arial", 45, bold=True)
 BG_COLOUR = (135, 206, 250)  # RGB value for lighter blue
 TEXT_COLOUR = (31, 81, 120)  # RGB value for darker blue
@@ -70,7 +70,7 @@ class Fish(GameObject):
         super().__init__(position, sprite_sheet, sprite_rect, scale)
 
     def update(self):
-        self.position[0] -= 0.15  # Move fish left
+        self.position[0] -= FISH_SPEED  # Move fish left
         self.rect.x = self.position[0]
         if self.position[0] < -self.rect.width:  # Remove fish if it moves off screen
             self.kill()
@@ -88,18 +88,17 @@ class Scoreboard:
     def __init__(self):
         self.score = 0
         self.font = SCORE_FONT
-        self.position = (30, 30)
 
     def update_score(self):
         text = self.font.render(f"SCORE: {self.score}", True, TEXT_COLOUR)
-        game_screen.screen.blit(text, self.position)
+        game_screen.screen.blit(text, (30, 30))
 
     def increase_score(self):
         self.score += 1
 
     def reset_score(self):
         text = self.font.render(f"A fish was hit! Resetting...", True, TEXT_COLOUR_2)
-        game_screen.screen.blit(text, (500, 30))
+        game_screen.screen.blit(text, (30, 80))
         pygame.display.flip()
         sleep(2)
         self.score = 0
@@ -123,7 +122,6 @@ while RUN:
 
     game_screen.screen.fill(BG_COLOUR)  # Clear the screen each frame
     scoreboard.update_score()
-
 
     player.draw_sprite(game_screen.screen)
 
@@ -149,10 +147,12 @@ while RUN:
         if player.is_at_end_position():
             player.go_to_start()
             scoreboard.increase_score()
+            FISH_SPEED += 0.05
 
     collision = pygame.sprite.spritecollide(player, fish_group, False, pygame.sprite.collide_mask)
     if collision:
         player.go_to_start()
         scoreboard.reset_score()
+        FISH_SPEED = 0.15
 
 pygame.quit()

@@ -37,12 +37,6 @@ class Fish(GameObject):
         self.speed = 1  # Adjust speed as needed
         self.direction = (1, 0)  # Initial direction (right)
         self.all_fish = []
-        self.sprite_rect = (1, 4, 14, 10) # Adjusting sprite rect to make player hit box smaller
-        self.image = pygame.transform.scale(
-            self.sprite_sheet.subsurface(self.sprite_rect),
-            (int(self.sprite_rect[2] * self.scale), int(self.sprite_rect[3] * self.scale))
-        )
-        self.rect = self.image.get_rect(topleft=position) 
     
     def create_fish(self):
         fish = GameObject(self.position, self.sprite_sheet, self.sprite_rect)
