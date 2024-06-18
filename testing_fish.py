@@ -1,6 +1,6 @@
 import pygame
 import random
-import os
+from time import sleep
 
 # pygame setup
 pygame.init()
@@ -8,9 +8,12 @@ pygame.font.init()
 
 # variables
 RUN = True
-BG_COLOUR = (135, 206, 250)  # RGB value for light blue
 FISH_SPRITES = ["cyan_fish_sprite.png", "orange_fish_sprite.png", "red_fish_sprite.png"]
 FISH_SPEED = 0.3
+SCORE_FONT = pygame.font.SysFont("Arial", 45, bold=True)
+BG_COLOUR = (135, 206, 250)  # RGB value for lighter blue
+TEXT_COLOUR = (31, 81, 120)  # RGB value for darker blue
+TEXT_COLOUR_2 = (55, 180, 230) # RGB value for medium blue
 
 class Screen:
     def __init__(self, width, height):
@@ -42,8 +45,8 @@ class GameObject(pygame.sprite.Sprite):
 
 class Player(GameObject):
     def __init__(self, position, sprite_sheet, sprite_rect, scale):
-        super().__init__(position, sprite_sheet, sprite_rect, scale)
-   
+        super().__init__(position, sprite_sheet, sprite_rect, scale)   
+
     def go_to_start(self):
         self.position = [575, 630]
         self.rect.topleft = self.position
@@ -82,12 +85,24 @@ def create_fish(fish_group):
         fish_group.add(fish)
 
 class Scoreboard:
-    def __init__(self, position, font):
-        self.position = position
-        self.font = font
-    
-    def increase_score():
-        pass  
+    def __init__(self):
+        self.score = 0
+        self.font = SCORE_FONT
+        self.position = (30, 30)
+
+    def update_score(self):
+        text = self.font.render(f"SCORE: {self.score}", True, TEXT_COLOUR)
+        game_screen.screen.blit(text, self.position)
+
+    def increase_score(self):
+        self.score += 1
+
+    def reset_score(self):
+        text = self.font.render(f"A fish was hit! Resetting...", True, TEXT_COLOUR_2)
+        game_screen.screen.blit(text, (500, 30))
+        pygame.display.flip()
+        sleep(2)
+        self.score = 0
 
 # Create the screen
 game_screen = Screen(1200, 700)
@@ -101,10 +116,15 @@ player = Player([575, 630], player_sprite, (0, 0, 16, 16), scale=5)  # Adjust sp
 # Create a group for fish
 fish_group = pygame.sprite.Group()
 
+scoreboard = Scoreboard()
+
 # Main loop
 while RUN:
 
     game_screen.screen.fill(BG_COLOUR)  # Clear the screen each frame
+    scoreboard.update_score()
+
+
     player.draw_sprite(game_screen.screen)
 
     create_fish(fish_group)
@@ -117,16 +137,22 @@ while RUN:
 
         if event.type == pygame.QUIT:
             RUN = False
+
         elif event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_UP:
                 player.move_up()
+
             if event.key == pygame.K_DOWN:
                 player.move_down()
 
-    if player.is_at_end_position():
-        player.go_to_start()
+        if player.is_at_end_position():
+            player.go_to_start()
+            scoreboard.increase_score()
 
-    collision = pygame.sprite.spritecollide(player, fish_group, True)
-    
+    collision = pygame.sprite.spritecollide(player, fish_group, False, pygame.sprite.collide_mask)
+    if collision:
+        player.go_to_start()
+        scoreboard.reset_score()
 
 pygame.quit()
